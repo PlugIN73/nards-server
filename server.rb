@@ -29,6 +29,13 @@ class NardsServer < GServer
     end
     loop{
       cmd, *arg = *io.gets.chomp.split
+      if arg[0].to_i == 1
+        to_side = 2
+      elsif arg[0].to_i == 2
+        to_side = 1
+      else
+        to_side = 0
+      end
       case cmd
         when "get_side"
           begin
@@ -36,14 +43,12 @@ class NardsServer < GServer
           end
         when "move_selected_to_position"
           begin
-            if arg[0].to_i == 1
-              to_side = 2
-            elsif arg[0].to_i == 2
-                to_side = 1
-            else
-                to_side = 0
-            end
             @msg[to_side] = "move_selected_to_position #{arg[1]} #{arg[2]} #{arg[3]}"
+            io.puts "+OK"
+          end
+        when "your_movement"
+          begin
+            @msg[to_side] = "your_movement"
             io.puts "+OK"
           end
         when "get_message"
