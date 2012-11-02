@@ -38,12 +38,10 @@ class NardsServer < GServer
           begin
             if arg[0].to_i == 1
               to_side = 2
-            else
-              if arg[0].to_i == 2
+            elsif arg[0].to_i == 2
                 to_side = 1
-              else
+            else
                 to_side = 0
-              end
             end
             @msg[to_side] = "move_selected_to_position #{arg[1]} #{arg[2]} #{arg[3]}"
             io.puts "+OK"
