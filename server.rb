@@ -3,8 +3,7 @@ require 'gserver'
 class NardsServer < GServer
   def initialize *args
     super
-    @gamers = []
-    @next_side ||= 1
+    @gamers = Hash.new
     @msg = []
     @msg[0], @msg[1], @msg[2] = "msg[0]", "hello", "hello"
   end
@@ -12,30 +11,28 @@ class NardsServer < GServer
   def disconnecting(clientPort)
     log("#{self.class.to_s} #{@host}:#{@port} " +
             "client:#{clientPort} disconnect")
-    @gamers.each{
-      |gamer|
-      unless gamer == clientPort
-        @gamers.delete clientPort
-      end
-      if @next_side == 0 && @gamers.count == 0
-        @next_side = 1
-      end
-    }
+    @gamers.each{|key, value| @gamers.delete(key) if value.peeraddr(true)[1] == clientPort}
+    log("#{@gamers}")
   end
 
   def serve io
-    @gamers << io
+    unless @gamers.has_value?(io)
+      if !@gamers.has_key?("1")
+        @gamers["1"] = io.clone
+        next_side = 1
+      elsif !@gamers.has_key?("2")
+        @gamers["2"] = io.clone
+        next_side = 2
+      else
+        next_side = 0
+      end
+    end
     loop{
       cmd, *arg = *io.gets.chomp.split
       case cmd
         when "get_side"
           begin
-          io.puts "#{@next_side}"
-          if @next_side == 1
-            @next_side = @next_side + 1
-          else
-            @next_side = 0
-          end
+          io.puts "#{next_side}"
           end
         when "move_selected_to_position"
           begin
